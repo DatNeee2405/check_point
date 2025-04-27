@@ -54,6 +54,9 @@
             font-size: 14px;
             color: #555;
         }
+        .reset-buttons {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -69,6 +72,11 @@
     <div id="history">
         <h2>Lịch Sử Hoạt Động:</h2>
         <div id="historyContent"></div>
+    </div>
+
+    <div class="reset-buttons">
+        <button onclick="resetScores()">Reset Điểm</button>
+        <button onclick="resetHistory()">Reset Lịch Sử</button>
     </div>
 
     <script>
@@ -176,6 +184,20 @@
                     historyDiv.appendChild(entryDiv);
                 });
             }
+        }
+
+        function resetScores() {
+            players.forEach(player => {
+                player.score = 0;
+            });
+            updatePlayerList();
+            alert("Điểm của tất cả người chơi đã được reset về 0!");
+        }
+
+        function resetHistory() {
+            history = {};
+            updateHistoryDisplay();
+            alert("Lịch sử hoạt động đã được reset!");
         }
     </script>
 
