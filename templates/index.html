@@ -1,10 +1,183 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Flask App on Render</title>
+    <meta charset="UTF-8">
+    <title>Quản lý Người Chơi & Điểm Số</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+        }
+        h1 {
+            color: #3498db;
+        }
+        input, button {
+            padding: 8px 12px;
+            margin: 5px 2px;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .player-info {
+            font-weight: bold;
+            width: 180px;
+        }
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .buttons button {
+            font-size: 12px;
+            padding: 5px 8px;
+            min-width: 70px;
+        }
+        #history {
+            margin-top: 40px;
+        }
+        .history-date {
+            font-weight: bold;
+            margin-top: 20px;
+            color: #2c3e50;
+        }
+        .history-entry {
+            margin-left: 15px;
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
 </head>
 <body>
-    <h1>🎉 Hello from your Flask app!</h1>
-    <p>This is deployed on Render.com 🚀</p>
+
+    <h1>Thêm Người Chơi (Tối đa 4 người)</h1>
+
+    <input type="text" id="playerName" placeholder="Nhập tên người chơi">
+    <button onclick="addPlayer()">Thêm</button>
+
+    <h2>Danh Sách Người Chơi:</h2>
+    <ul id="playerList"></ul>
+
+    <div id="history">
+        <h2>Lịch Sử Hoạt Động:</h2>
+        <div id="historyContent"></div>
+    </div>
+
+    <script>
+        let players = [];
+        let history = {};
+
+        function getCurrentDate() {
+            const now = new Date();
+            return now.toISOString().split('T')[0]; // dạng yyyy-mm-dd
+        }
+
+        function addPlayer() {
+            const nameInput = document.getElementById("playerName");
+            const playerName = nameInput.value.trim();
+
+            if (playerName === "") {
+                alert("Vui lòng nhập tên người chơi!");
+                return;
+            }
+
+            if (players.length >= 4) {
+                alert("Danh sách đã đủ 4 người chơi!");
+                nameInput.value = "";
+                return;
+            }
+
+            players.push({
+                name: playerName,
+                score: 0
+            });
+
+            updatePlayerList();
+
+            nameInput.value = "";
+            nameInput.focus();
+        }
+
+        function updatePlayerList() {
+            const playerList = document.getElementById("playerList");
+            playerList.innerHTML = "";
+
+            players.forEach((player, index) => {
+                const listItem = document.createElement("li");
+
+                const playerInfo = document.createElement("div");
+                playerInfo.className = "player-info";
+                playerInfo.textContent = `${player.name} - Điểm: ${player.score}`;
+
+                const buttons = document.createElement("div");
+                buttons.className = "buttons";
+
+                // Các nút cộng điểm theo hạng
+                buttons.innerHTML += `
+                    <button onclick="changeScore(${index}, 3, 'Nhất')">Nhất (+3)</button>
+                    <button onclick="changeScore(${index}, 2, 'Nhì')">Nhì (+2)</button>
+                    <button onclick="changeScore(${index}, 1, 'Ba')">Ba (+1)</button>
+                    <button onclick="changeScore(${index}, 0, 'Bốn')">Bốn (+0)</button>
+                `;
+
+                // Các nút trừ điểm theo lỗi
+                buttons.innerHTML += `
+                    <button onclick="changeScore(${index}, -2, 'Thúi 2 đỏ')">Thúi 2 đỏ (-2)</button>
+                    <button onclick="changeScore(${index}, -1, 'Thúi 2 đen')">Thúi 2 đen (-1)</button>
+                    <button onclick="changeScore(${index}, -2, 'Tứ quý 1 heo')">Tứ quý 1 heo (-2)</button>
+                    <button onclick="changeScore(${index}, -4, 'Tứ quý 2 heo')">Tứ quý 2 heo (-4)</button>
+                `;
+
+                listItem.appendChild(playerInfo);
+                listItem.appendChild(buttons);
+                playerList.appendChild(listItem);
+            });
+        }
+
+        function changeScore(index, value, actionName) {
+            players[index].score += value;
+            logHistory(players[index].name, value, actionName);
+            updatePlayerList();
+        }
+
+        function logHistory(playerName, scoreChange, actionName) {
+            const date = getCurrentDate();
+            if (!history[date]) {
+                history[date] = [];
+            }
+            const sign = scoreChange >= 0 ? "+" : "";
+            history[date].push(`${playerName} thực hiện "${actionName}" (${sign}${scoreChange} điểm)`);
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const historyDiv = document.getElementById("historyContent");
+            historyDiv.innerHTML = "";
+
+            for (const date in history) {
+                const dateTitle = document.createElement("div");
+                dateTitle.className = "history-date";
+                dateTitle.textContent = `Ngày ${date}:`;
+
+                historyDiv.appendChild(dateTitle);
+
+                history[date].forEach(entry => {
+                    const entryDiv = document.createElement("div");
+                    entryDiv.className = "history-entry";
+                    entryDiv.textContent = entry;
+                    historyDiv.appendChild(entryDiv);
+                });
+            }
+        }
+    </script>
+
 </body>
 </html>
